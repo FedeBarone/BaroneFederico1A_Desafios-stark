@@ -7,9 +7,6 @@ from calculos import *
 from stark import *
 import os
 #===========================================FEDERICO BARONE 1A==========================================================
-#ACLARACION: El desafio stark 02 esta en el modulo "stark_biblioteca". 
-#tengo que pulir algunas funciones del stark 00 y 01, pero creo que en general esta todo bien
-#El desafio 3/4 lo estoy haciendo
 #===========================================================================================================================
 #=======================================================Desafío Stark #00=================================================================
 # A. Analizar detenidamente el set de datos

@@ -1,8 +1,8 @@
-from stark_biblioteca import imprimir_dato
+from stark import imprimir_dato
 import re
 import os
 import json
-#=======================================================Desafío Stark #05==================================================================
+#=======================================================Desafío Stark #04 / 05==================================================================
 # Basándose en el desafío #01 deberás hacer la siguiente ejercitación, utilizando un
 # menú que permita acceder a cada uno de los puntos por separado.
 
@@ -473,7 +473,7 @@ def leer_archivo(archivo_json: str)-> list:# 1.4
 
 def guardar_archivo(archivo_csv: str, contenido_archivo_csv: str)-> bool:# 1.5
     return_aux = False
-    with open(archivo_csv, 'w+') as file:
+    with open(archivo_csv, 'w') as file:
         file.write(contenido_archivo_csv)
         return_aux = True
     if not return_aux:
@@ -481,9 +481,6 @@ def guardar_archivo(archivo_csv: str, contenido_archivo_csv: str)-> bool:# 1.5
     else:
         print("Se creo el archivo: archivo.csv")
     return return_aux
-
-#path absoluto guardar_archivo(r"C:\Users\Federico\Desktop\Estudio\Programacion\Python\Ejercicios_sabados\prueba.csv", "Buenas"))
-#path relativo guardar_archivo(r"Ejercicios_sabados\prueba.csv", "Buenas"))
 
 def capitalizar_palabras(palabras: str)-> str:# 1.6
     palabras = palabras.split()
@@ -508,24 +505,182 @@ def obtener_nombre_capitalizado(heroe: dict)-> str:# 1.7
 def obtener_nombre_y_dato(heroe: dict, key: str)-> str:# 1.8
     nombre_y_dato = None
     return nombre_y_dato
-# 1.8. Crear la función 'obtener_nombre_y_dato' la cual recibirá por
-# parámetro un diccionario el cual representará a un héroe y una key
-# (string) la cual representará la key del héroe a imprimir. La función
-# devolverá un string el cual contenga el nombre y dato (key) del héroe a
-# imprimir.
-# El dato puede ser 'altura', 'fuerza', 'peso' O CUALQUIER OTRO DATO.
-# El string resultante debe estar formateado al estilo: (suponiendo que la
-# key es fuerza)
-# Nombre: Venom | Fuerza: 500
-# Reutilizar 'obtener_nombre_capitalizado'
 
+def es_genero(heroe, genero):#2.1
+    if 'genero' in heroe:
+        return heroe['genero'] == genero
+    return False
 
-# 2.1. Crear la función 'es_genero' la cual recibirá por parámetro un
-# diccionario que representará un héroe y un string el cual será usado
-# para evaluar si el héroe coincide con el género buscado (El string
-# puede ser M, F o NB). retornará True en caso de que cumpla, False
-# caso contrario.
+def stark_guardar_heroe_genero(heroes, genero):#2.2
+    heroes_genero = []
+    for heroe in heroes:
+        if es_genero(heroe, genero):
+            nombre = obtener_nombre_capitalizado(heroe)
+            imprimir_dato(heroe)
+            heroes_genero.append(nombre)
+    
+    archivo = f'heroes_{genero}.csv'
+    return guardar_archivo(archivo, heroes_genero)
 
+def calcular_min_genero(heroes, genero, key):#3.1
+    heroe_encontrado = None
+    flag_genero = False
+    
+    for heroe in heroes:
+        if not flag_genero and es_genero(heroe, genero):
+            heroe_encontrado = heroe
+            flag_genero = True
+        elif flag_genero and es_genero(heroe, genero):
+            if heroe[key] < heroe_encontrado[key]:
+                heroe_encontrado = heroe
+    
+    return heroe_encontrado
+
+def calcular_max_genero(heroes, genero, key):#3.2
+    heroe_encontrado = None
+    flag_genero = False
+    
+    for heroe in heroes:
+        if not flag_genero and es_genero(heroe, genero):
+            heroe_encontrado = heroe
+            flag_genero = True
+        elif flag_genero and es_genero(heroe, genero):
+            if heroe[key] > heroe_encontrado[key]:
+                heroe_encontrado = heroe
+    
+    return heroe_encontrado
+
+def calcular_max_min_dato_genero(heroes, genero, key, calculo):#3.3
+    if calculo == 'minimo':
+        return calcular_min_genero(heroes, genero, key)
+    elif calculo == 'maximo':
+        return calcular_max_genero(heroes, genero, key)
+    else:
+        return None
+
+def stark_calcular_imprimir_guardar_heroe_genero(heroes, genero, key, calculo):#3.4
+    heroe = calcular_max_min_dato_genero(heroes, genero, key, calculo)
+    if heroe is not None:
+        nombre_dato = obtener_nombre_y_dato(heroe, key)
+        imprimir_dato(heroe, nombre_dato)
+        archivo = f'heroes_{calculo}_{key}_{genero}.csv'
+        return guardar_archivo(archivo, [nombre_dato])
+    return False
+
+def sumar_dato_heroe_genero(heroe, genero, key):#4.1
+    if 'genero' in heroe and heroe['genero'] == genero:
+        if key in heroe:
+            return heroe[key]
+    return -1
+
+def cantidad_heroes_genero(heroes, genero):#4.2
+    cantidad = 0
+    for heroe in heroes:
+        if es_genero(heroe, genero):
+            cantidad += 1
+    return cantidad
+
+def calcular_promedio_genero(heroes, genero, key):#4.3
+    suma = 0
+    cantidad = 0
+    for heroe in heroes:
+        if es_genero(heroe, genero):
+            dato = sumar_dato_heroe_genero(heroe, genero, key)
+            if dato != -1:
+                suma += dato
+                cantidad += 1
+    if cantidad > 0:
+        return (suma, cantidad)
+    return None
+
+def stark_calcular_imprimir_guardar_promedio_altura_genero(heroes, genero):#4.4
+    promedio = calcular_promedio_genero(heroes, genero, 'altura')
+    if promedio is not None:
+        mensaje = f"Altura promedio género {genero}: {promedio}"
+        imprimir_dato(mensaje)
+        archivo = f'heroes_promedio_altura_{genero}.csv'
+        return guardar_archivo(archivo, [mensaje])
+    return False
+
+def calcular_cantidad_tipo(heroes, tipo):#5.1
+    if not heroes:
+        return {"Error": "La lista se encuentra vacía"}
+    
+    cantidad_tipo = {}
+    for heroe in heroes:
+        if tipo in heroe:
+            valor = heroe[tipo]
+            if valor in cantidad_tipo:
+                cantidad_tipo[valor] += 1
+            else:
+                cantidad_tipo[valor] = 1
+    
+    return cantidad_tipo
+
+def guardar_cantidad_heroes_tipo(cantidad_tipo, tipo):#5.2
+    mensaje_final = []
+    for tipo_valor, cantidad in cantidad_tipo.items():
+        mensaje = f"Caracteristica: {tipo} {tipo_valor} - Cantidad de heroes: {cantidad}"
+        mensaje_final.append(mensaje)
+    
+    archivo = f'heroes_cantidad_{tipo}.csv'
+    return guardar_archivo(archivo, mensaje_final)
+
+def stark_calcular_cantidad_por_tipo(heroes, tipo):#5.3
+    cantidad_tipo = calcular_cantidad_tipo(heroes, tipo)
+    return guardar_cantidad_heroes_tipo(cantidad_tipo, tipo)
+
+def obtener_lista_de_tipos(heroes, tipo):#6.1
+    tipos = []
+    for heroe in heroes:
+        if tipo in heroe:
+            valor = heroe[tipo]
+            valor = normalizar_dato(valor, "N/A")
+            tipos.append(capitalizar_palabras(valor))
+        else:
+            tipos.append("N/A")
+    return tipos
+
+def normalizar_dato(dato, default):#6.2
+    if not dato:
+        return default
+    return dato
+
+def normalizar_heroe(heroe, tipo):#6.3
+    nombre = capitalizar_palabras(heroe["nombre"])
+    if tipo in heroe:
+        valor = normalizar_dato(heroe[tipo], "N/A")
+        valor = capitalizar_palabras(valor)
+    else:
+        valor = "N/A"
+    return {"nombre": nombre, tipo: valor}
+
+def obtener_heroes_por_tipo(heroes, tipos, tipo_dato):#6.4
+    heroes_tipo = {}
+    for tipo in tipos:
+        heroes_tipo[tipo] = []
+    
+    for heroe in heroes:
+        heroe_normalizado = normalizar_heroe(heroe, tipo_dato)
+        for tipo in tipos:
+            if heroe_normalizado[tipo_dato] == tipo:
+                heroes_tipo[tipo].append(heroe_normalizado["nombre"])
+    
+    return heroes_tipo
+
+def guardar_heroes_por_tipo(heroes_tipo, tipo_dato):#6.5
+    mensaje_final = []
+    for tipo in heroes_tipo:
+        heroes = " | ".join(heroes)
+        mensaje = f"{tipo_dato} {tipo}: {heroes}"
+        mensaje_final.append(mensaje)
+    
+    archivo = f'heroes_segun_{tipo_dato}.csv'
+    return guardar_archivo(archivo, mensaje_final)
+
+def stark_listar_heroes_por_dato(heroes, tipo_dato):#6.6
+    tipos = obtener_lista_de_tipos(heroes, tipo_dato)
+    tipo_dato = obtener_heroes_por_tipo(heroes, tipos, tipo_dato)
 
 
 
